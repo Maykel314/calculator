@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>آلة حاسبة</title>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --btn: #fff;
+    --btn-hover: #eaeaea;
+    --op: #ff9800;
+    --op-hover: #e68900;
+    --equal: #2196f3;
+    --equal-hover: #1976d2;
+    --clear: #f44336;
+    --clear-hover: #d32f2f;
+    --text: #222;
+    --shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--bg);
+    font-family: Arial, sans-serif;
+  }
+
+  .calc {
+    width: 340px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .display {
+    background: #111;
+    color: #0f0;
+    padding: 20px;
+    font-size: 28px;
+    text-align: right;
+    min-height: 70px;
+    word-wrap: break-word;
+    box-sizing: border-box;
+  }
+
+  .history {
+    font-size: 14px;
+    color: #aaa;
+  }
+
+  .keys {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 10px;
+    padding: 15px;
+    background: #fafafa;
+  }
+
+  button {
+    padding: 18px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--btn);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  button:hover {
+    background: var(--btn-hover);
+  }
+
+  .op {
+    background: var(--op);
+    color: #fff;
+  }
+
+  .op:hover { background: var(--op-hover); }
+
+  .equal {
+    grid-column: span 2;
+    background: var(--equal);
+    color: #fff;
+  }
+
+  .equal:hover { background: var(--equal-hover); }
+
+  .clear {
+    background: var(--clear);
+    color: #fff;
+  }
+
+  .clear:hover { background: var(--clear-hover); }
+
+  @media(max-width:400px){
+    .calc{width:95%;}
+  }
+</style>
+</head>
+<body>
+  <div class="calc">
+    <div class="display">
+      <div class="history" id="history"></div>
+      <div id="result">0</div>
+    </div>
+    <div class="keys">
+      <button class="clear" id="all-clear">C</button>
+      <button id="back">⌫</button>
+      <button class="op" data-op="(">(</button>
+      <button class="op" data-op=")">)</button>
+
+      <button data-val="7">7</button>
+      <button data-val="8">8</button>
+      <button data-val="9">9</button>
+      <button class="op" data-op="/">÷</button>
+
+      <button data-val="4">4</button>
+      <button data-val="5">5</button>
+      <button data-val="6">6</button>
+      <button class="op" data-op="*">×</button>
+
+      <button data-val="1">1</button>
+      <button data-val="2">2</button>
+      <button data-val="3">3</button>
+      <button class="op" data-op="-">−</button>
+
+      <button data-val="0">0</button>
+      <button data-val=".">.</button>
+      <button class="equal" id="equals">=</button>
+      <button class="op" data-op="+">+</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const display = document.getElementById('result');
+  const historyEl = document.getElementById('history');
+  let expr = '';
+
+  function update() {
+    display.textContent = expr === '' ? '0' : expr;
+  }
+
+  function safeEval(s) {
+    if(!/^[0-9+\-*/().\s]+$/.test(s)) throw new Error('تعبير غير صالح');
+    return Function('"use strict"; return (' + s + ')')();
+  }
+
+  document.querySelectorAll('button[data-val]').forEach(b=>{
+    b.addEventListener('click', ()=>{ expr += b.dataset.val; update(); });
+  });
+
+  document.querySelectorAll('button.op').forEach(b=>{
+    b.addEventListener('click', ()=>{ expr += b.dataset.op; update(); });
+  });
+
+  document.getElementById('all-clear').addEventListener('click', ()=>{
+    expr = ''; historyEl.textContent = ''; update();
+  });
+
+  document.getElementById('back').addEventListener('click', ()=>{
+    expr = expr.slice(0,-1); update();
+  });
+
+  document.getElementById('equals').addEventListener('click', ()=>{
+    try {
+      const value = safeEval(expr || '0');
+      historyEl.textContent = expr + ' =';
+      expr = String(Number.isFinite(value) ? value : 'خطأ');
+      update();
+    } catch(e) {
+      display.textContent = 'خطأ';
+      setTimeout(()=>{ update(); },800);
+    }
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>
